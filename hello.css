@@ -1,0 +1,207 @@
+@import url('https://fonts.googleapis.com/css2?family=Gochi+Hand&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Comic+Neue:ital,wght@0,400;0,700;1,400&display=swap');
+
+:root {
+    --light-bg: #f8f9fa;
+    --border-color: #dee2e6;
+}
+
+body {
+    background-color: var(--light-bg);
+    font-family: 'Comic Neue', cursive;
+    color: #000;
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+    position: relative;
+    overflow-x: hidden;
+}
+
+body::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: url('https://images.unsplash.com/photo-1542435503-956c469947f6?ixlib=rb-4.0.3&q=80&fm=webp');
+    opacity: 0.03;
+    pointer-events: none;
+    z-index: -1;
+}
+
+.hand-drawn-border {
+    border: 2px solid #000 !important;
+    border-radius: 15px !important;
+    box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.1);
+    position: relative;
+}
+
+.header-title {
+    font-family: 'Gochi Hand', cursive;
+    font-size: 32px;
+    text-align: center;
+    margin: 15px 0 25px;
+    position: relative;
+    display: inline-block;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.header-title::before,
+.header-title::after {
+    content: "✎";
+    font-size: 26px;
+    margin: 0 10px;
+    opacity: 0.7;
+}
+
+.btn-hand-drawn {
+    border: 2px solid #000;
+    border-radius: 10px;
+    background-color: #fff;
+    color: #000;
+    font-family: 'Gochi Hand', cursive;
+    font-size: 20px;
+    padding: 8px 20px;
+    transition: all 0.2s;
+    box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.1);
+}
+
+.btn-hand-drawn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    background-color: #000;
+    color: #fff;
+}
+
+.table-container {
+    background: #fff;
+    border-radius: 15px;
+    padding: 15px;
+    margin-bottom: 20px;
+    overflow: hidden;
+}
+
+.hand-drawn-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    border: 2px solid #000;
+    border-radius: 10px;
+}
+
+.hand-drawn-table th,
+.hand-drawn-table td {
+    border: 1px solid #000;
+    padding: 12px;
+    text-align: left;
+    position: relative;
+}
+
+.hand-drawn-table th {
+    background-color: #f0f0f0;
+    font-family: 'Gochi Hand', cursive;
+    font-size: 18px;
+}
+
+.hand-drawn-table tr:nth-child(even) {
+    background-color: #f8f9fa;
+}
+
+.modal-content {
+    border: 2px solid #000;
+    border-radius: 15px;
+}
+
+.modal-header {
+    border-bottom: 2px dashed #000;
+    background-color: #f0f0f0;
+    border-radius: 13px 13px 0 0;
+    padding: 15px;
+}
+
+.modal-title {
+    font-family: 'Gochi Hand', cursive;
+    font-size: 24px;
+}
+
+.modal-body {
+    padding: 20px;
+}
+
+.modal-footer {
+    border-top: 2px dashed #000;
+    border-radius: 0 0 13px 13px;
+    padding: 15px;
+}
+
+.form-label {
+    font-weight: bold;
+    margin-bottom: 8px;
+    display: block;
+    font-family: 'Gochi Hand', cursive;
+    font-size: 18px;
+}
+
+.form-control,
+.form-select {
+    background-color: rgba(248, 249, 250, 0.7);
+    border: 1.5px solid #000;
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-family: 'Comic Neue', cursive;
+}
+
+.required-field::after {
+    content: "*";
+    color: #000;
+    margin-left: 4px;
+}
+
+.action-btn {
+    background: none;
+    border: none;
+    color: #000;
+    font-size: 16px;
+    margin: 0 5px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.action-btn:hover {
+    transform: scale(1.2);
+}
+
+.dotted-line {
+    height: 2px;
+    background: url("data:image/svg+xml,%3csvg width='100%25' height='100%25' xmlns='http://www.w3.org/2000/svg'%3e%3cline x1='0' y1='0' x2='100%25' y2='0' fill='none' stroke='%23000' stroke-width='2' stroke-dasharray='5%2c 5'/%3e%3c/svg%3e");
+    margin: 20px 0;
+}
+
+/* 手绘动画效果 */
+@keyframes draw {
+    from {
+        stroke-dashoffset: 1000;
+    }
+
+    to {
+        stroke-dashoffset: 0;
+    }
+}
+
+.drawing-animation {
+    animation: draw 1.5s ease-out forwards;
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+    .hand-drawn-table {
+        font-size: 14px;
+    }
+
+    .hand-drawn-table th,
+    .hand-drawn-table td {
+        padding: 8px;
+    }
+}

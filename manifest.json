@@ -1,0 +1,45 @@
+{
+    "name": "小宝图片下载器",
+    "description": "一个自定义图片下载规则的谷歌浏览器插件",
+    "version": "1.0",
+    "manifest_version": 3,
+    "action": {},
+    "content_scripts": [
+        {
+            "js": [
+                "content.js"
+            ],
+            "matches": [
+                "<all_urls>"
+            ]
+        }
+    ],
+    "background": {
+        "service_worker": "background.js"
+    },
+    "permissions": [
+        "activeTab",
+        "scripting",
+        "downloads",
+        "tabs",
+        "storage"
+    ],
+    "content_security_policy": {
+        "extension_pages": "script-src 'self'; object-src 'self'"
+    },
+    "icons": {
+        "16": "icon-16.png",
+        "48": "icon-48.png",
+        "128": "icon-128.png"
+    },
+    "web_accessible_resources": [
+        {
+            "resources": [
+                "icon-128.png"
+            ],
+            "matches": [
+                "<all_urls>"
+            ]
+        }
+    ]
+}

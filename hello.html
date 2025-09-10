@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>图片自定义规则下载器</title>
+    <link href="./bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="./hello.css">
+    <style>
+
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <!-- 页面标题 -->
+        <h1 class="header-title hand-drawn-border px-4 py-2">图片规则下载器</h1>
+
+        <!-- 操作按钮 -->
+        <div class="d-flex justify-content-end mb-3">
+            <button class="btn-hand-drawn" data-bs-toggle="modal" data-bs-target="#addRuleModal">
+                <i class="fas fa-plus me-2"></i>新增规则
+            </button>
+        </div>
+
+        <div class="dotted-line"></div>
+
+        <!-- 规则表格 -->
+        <div class="table-container hand-drawn-border">
+            <table class="hand-drawn-table">
+                <thead>
+                    <tr>
+                        <th>按钮名称</th>
+                        <th>按钮位置</th>
+                        <th>元素位置</th>
+
+                        <th>正则表达式</th>
+                        <th>网页关键字</th>
+                        <th>保存格式</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+
+
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- 新增规则模态框 -->
+    <div class="modal fade" id="addRuleModal" tabindex="-1" aria-labelledby="addRuleModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addRuleModalLabel">
+                        <i class="fas fa-plus-circle me-2"></i>
+                        <span id="modalTitle">新增下载规则</span>
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- 修改表单部分 -->
+                    <form id="ruleForm">
+                        <input type="hidden" id="ruleId">
+                        <input type="hidden" id="formMode" value="add">
+                        <div class="mb-3">
+                            <label for="buttonName" class="form-label required-field">按钮名称</label>
+                            <input type="text" class="form-control" id="buttonName" required>
+                        </div>
+
+
+                        <div class="mb-3">
+                            <label for="buttonPosition" class="form-label required-field">按钮位置</label>
+                            <input type="text" class="form-control" id="buttonPosition"
+                                placeholder="例如: .download-btn 或 #download-button" required>
+                            <div class="form-text">输入CSS选择器，如类选择器(.class)或ID选择器(#id)</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="elementPosition" class="form-label required-field">元素位置</label>
+                            <input type="text" class="form-control" id="elementPosition"
+                                placeholder="例如: .image-container 或 #product-images" required>
+                            <div class="form-text">要从中提取图片的元素位置（CSS选择器）</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="regexPattern" class="form-label">正则表达式</label>
+                            <input type="text" class="form-control" id="regexPattern"
+                                placeholder="例如: /image_\d+\.(jpg|png)/">
+                            <div class="form-text">用于匹配图片URL的正则表达式（可选）</div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="webKeyword" class="form-label">网页关键字</label>
+                            <input type="text" class="form-control" id="webKeyword">
+                        </div>
+                        <div class="mb-3">
+                            <label for="saveFormat" class="form-label required-field">保存格式</label>
+                            <select class="form-select" id="saveFormat" required>
+                                <option value="jpg" selected>JPG</option>
+                                <option value="png">PNG</option>
+                            </select>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-hand-drawn" data-bs-dismiss="modal">取消</button>
+                    <button type="button" class="btn-hand-drawn" id="saveRuleBtn">
+                        <span id="saveBtnText">保存规则</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="./bootstrap.bundle.min.js"></script>
+    <script src="./hello.js"></script>
+
+</body>
+
+</html>
