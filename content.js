@@ -1,17 +1,25 @@
-// content.js - 性能优化版本
+// content.js
 let currentRules = [];
-let checkInterval = null;
-let lastCheckTime = 0;
-const MIN_CHECK_INTERVAL = 2000; // 最小检查间隔
+let observer = null;
 const insertedButtons = new WeakSet(); // 使用WeakSet避免内存泄漏
 
 // 页面加载时获取规则
 chrome.runtime.sendMessage({ action: "getRules" }, function (response) {
+    if (chrome.runtime.lastError) {
+        console.error('获取规则时出错:', chrome.runtime.lastError);
+        // 即使出错也尝试添加交互监听器
+        addInteractionListeners();
+        return;
+    }
+
     console.log("获取规则：", response.rules)
     if (response && response.rules) {
-
         currentRules = response.rules;
         checkAndInsertButtons();
+        // 在获取规则后添加交互监听器
+        addInteractionListeners();
+    } else {
+        addInteractionListeners();
     }
 });
 
@@ -24,66 +32,31 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     }
 });
 
-// 性能优化：添加防抖函数
-function debounce(func, wait) {
-    let timeout;
-    return function executedFunction(...args) {
-        const later = () => {
-            clearTimeout(timeout);
-            func(...args);
-        };
-        clearTimeout(timeout);
-        timeout = setTimeout(later, wait);
-    };
-}
-
-// 性能优化：添加节流函数
-function throttle(func, limit) {
-    let inThrottle;
-    return function (...args) {
-        const result = arguments.length ? func.apply(this, args) : func.call(this);
-        if (!inThrottle) {
-            inThrottle = true;
-            setTimeout(() => inThrottle = false, limit);
-        }
-        return result;
-    };
-}
-
-// 检查并插入按钮 - 优化版本
+// 检查并插入按钮
 function checkAndInsertButtons() {
-    // 性能优化：避免频繁检查
-    const now = Date.now();
-    if (now - lastCheckTime < MIN_CHECK_INTERVAL) {
-        return;
-    }
-    lastCheckTime = now;
-
     // 获取当前页面的域名
     const currentDomain = window.location.hostname;
 
-    // 性能优化：提前过滤匹配的规则
+    // 过滤匹配的规则
     const matchingRules = currentRules.filter(rule =>
         rule.webKeyword && currentDomain.includes(rule.webKeyword)
     );
 
     if (matchingRules.length === 0) {
+        console.log('没有匹配规则，不插入按钮');
         return; // 没有匹配规则，直接返回
     }
 
-    // 使用 requestAnimationFrame 优化DOM操作
-    requestAnimationFrame(() => {
-        matchingRules.forEach(rule => {
-            const container = document.querySelector(rule.buttonPosition);
-            if (container) {
-                console.log('找到目标容器，插入按钮:', rule.buttonName);
-                insertDownloadButton(rule, container);
-            }
-        });
+    matchingRules.forEach(rule => {
+        const container = document.querySelector(rule.buttonPosition);
+        if (container) {
+            console.log('找到目标容器，插入按钮:', rule.buttonName);
+            insertDownloadButton(rule, container);
+        }
     });
 }
 
-// 插入下载按钮 - 优化版本
+// 插入下载按钮
 function insertDownloadButton(rule, container) {
     // 使用WeakSet检查是否已插入
     if (insertedButtons.has(container)) {
@@ -108,14 +81,13 @@ function insertDownloadButton(rule, container) {
     flex-shrink: 0;
 `;
 
-
     // 创建文本节点
     const textNode = document.createTextNode(rule.buttonName);
 
     // 将图标和文本添加到按钮中
     button.appendChild(icon);
     button.appendChild(textNode);
-    // 性能优化：一次性设置所有样式
+    // 设置样式
     button.style.cssText = `
     position: absolute;
     left: 100px;
@@ -134,60 +106,42 @@ function insertDownloadButton(rule, container) {
     align-items: center;
     justify-content: center;
     line-height: 1;
-        white-space: nowrap;
-
+    white-space: nowrap;
 `;
-
-    // 性能优化：只在需要时修改容器样式
-    // if (getComputedStyle(container).position === 'static') {
-    //     container.style.position = 'relative';
-    // }
-    // container.style.overflow = 'visible';
-
-    // 性能优化：使用事件委托和缓存样式
-    const hoverStyles = {
-        backgroundColor: '#000',
-        color: '#fff',
-        transform: 'translateY(-2px)',
-        boxShadow: '0 4px 8px rgba(0, 0, 0, 0.15)'
-    };
-
-    const defaultStyles = {
-        backgroundColor: '#fff',
-        color: '#000',
-        transform: 'translateY(0)',
-        boxShadow: '3px 3px 0 rgba(0, 0, 0, 0.1)'
-    };
-
-    const activeStyles = {
-        transform: 'translateY(0)',
-        boxShadow: '2px 2px 0 rgba(0, 0, 0, 0.1)'
-    };
 
     // 添加悬停效果
     button.addEventListener('mouseenter', function () {
-        Object.assign(this.style, hoverStyles);
+        this.style.backgroundColor = '#000';
+        this.style.color = '#fff';
+        this.style.transform = 'translateY(-2px)';
+        this.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.15)';
     });
 
     button.addEventListener('mouseleave', function () {
-        Object.assign(this.style, defaultStyles);
+        this.style.backgroundColor = '#fff';
+        this.style.color = '#000';
+        this.style.transform = 'translateY(0)';
+        this.style.boxShadow = '3px 3px 0 rgba(0, 0, 0, 0.1)';
     });
 
     // 添加点击效果
     button.addEventListener('mousedown', function () {
-        Object.assign(this.style, activeStyles);
+        this.style.transform = 'translateY(0)';
+        this.style.boxShadow = '2px 2px 0 rgba(0, 0, 0, 0.1)';
     });
 
     button.addEventListener('mouseup', function () {
-        Object.assign(this.style, hoverStyles);
+        this.style.backgroundColor = '#000';
+        this.style.color = '#fff';
+        this.style.transform = 'translateY(-2px)';
+        this.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.15)';
     });
 
-    // 添加点击事件 - 使用防抖避免重复点击
-    const debouncedHandleDownload = debounce(() => handleDownload(rule), 300);
+    // 添加点击事件
     button.addEventListener('click', function (event) {
         event.preventDefault();
         event.stopPropagation();
-        debouncedHandleDownload();
+        handleDownload(rule);
     });
 
     // 将按钮添加到容器中
@@ -212,7 +166,7 @@ function handleDownload(rule) {
     }
 }
 
-// 批量下载图片函数 - 恢复原始逻辑，优化性能
+// 批量下载图片函数
 function downloadImages(images, prefix = 'image', format = 'jpg', regexPattern) {
     console.log('开始下载图片，数量:', images.length);
     if (images.length === 0) {
@@ -220,7 +174,7 @@ function downloadImages(images, prefix = 'image', format = 'jpg', regexPattern) 
         return;
     }
 
-    // 性能优化：预编译正则表达式
+    // 处理正则表达式
     let regexObj = null;
     if (regexPattern) {
         try {
@@ -237,7 +191,7 @@ function downloadImages(images, prefix = 'image', format = 'jpg', regexPattern) 
         }
     }
 
-    // 直接遍历下载，保持原有逻辑
+    // 遍历下载
     images.forEach((image, index) => {
         let imageUrl = image.src;
         if (!imageUrl) {
@@ -245,7 +199,7 @@ function downloadImages(images, prefix = 'image', format = 'jpg', regexPattern) 
             return;
         }
 
-        // 使用预编译的正则表达式
+        // 使用正则表达式处理URL
         if (regexObj) {
             try {
                 const originalUrl = imageUrl;
@@ -266,7 +220,7 @@ function downloadImages(images, prefix = 'image', format = 'jpg', regexPattern) 
         const fileExtension = format && (format === 'jpg' || format === 'png') ? format : 'jpg';
         const filename = `${prefix}_${index + 1}.${fileExtension}`;
 
-        // 使用 Chrome 下载 API - 添加小延迟避免触发浏览器限制
+        // 使用 Chrome 下载 API
         setTimeout(() => {
             chrome.runtime.sendMessage({
                 action: "downloadImage",
@@ -279,11 +233,11 @@ function downloadImages(images, prefix = 'image', format = 'jpg', regexPattern) 
                     console.log('下载请求已发送:', response);
                 }
             });
-        }, index * 200); // 每张图片间隔200ms，避免触发浏览器下载限制
+        }, index * 200); // 每张图片间隔200ms
     });
 }
 
-// 获取类元素下的图片数量 - 优化版本
+// 获取类元素下的图片数量
 function getImageCountA(className) {
     const imagesInfo = [];
 
@@ -292,11 +246,9 @@ function getImageCountA(className) {
         console.log('使用简单选择器:', className);
 
         if (container) {
-            // 性能优化：使用 getElementsByTagName 更快
             const images = container.getElementsByTagName('img');
             console.log('找到的图片数量:', images.length);
 
-            // 性能优化：预分配数组大小
             const imagesArray = Array.from(images);
 
             for (let i = 0; i < imagesArray.length; i++) {
@@ -334,22 +286,14 @@ function getImageCountA(className) {
     }
 }
 
-// 页面加载完成后检查插入按钮
-// if (document.readyState === 'loading') {
-//     document.addEventListener('DOMContentLoaded', checkAndInsertButtons);
-// } else {
-//     // DOM已经加载完成
-//     checkAndInsertButtons();
-// }
-
-// 修改为立即启动观察器
+// 启动观察器
 if (document.body) {
     startObserver();
-    // 立即检查一次，防止元素已经存在
+    // 立即检查一次
     checkAndInsertButtons();
 } else {
     // 如果body还没加载，等待它加载完成
-    const observer = new MutationObserver((mutations, obs) => {
+    const bodyObserver = new MutationObserver((mutations, obs) => {
         if (document.body) {
             startObserver();
             checkAndInsertButtons();
@@ -357,55 +301,58 @@ if (document.body) {
         }
     });
 
-    observer.observe(document.documentElement, {
+    // 观察 document 而不是 document.documentElement
+    bodyObserver.observe(document.documentElement, {
         childList: true,
-        subtree: true
+        subtree: false
     });
 }
-
-// 性能优化：使用 MutationObserver 替代定时器
-let observer = null;
 
 function startObserver() {
     if (observer) {
         observer.disconnect();
     }
 
-    // 使用节流的检查函数
-    const throttledCheck = throttle(checkAndInsertButtons, 1000);
-
     observer = new MutationObserver((mutations) => {
-        // 只在有相关变化时检查
+        // 检查变化
         const relevantChange = mutations.some(mutation => {
             return mutation.type === 'childList' &&
                 mutation.addedNodes.length > 0;
         });
 
         if (relevantChange) {
-            throttledCheck();
+            checkAndInsertButtons();
         }
     });
 
-    // 只观察body的直接子元素变化
+    // 观察body变化
     observer.observe(document.body, {
         childList: true,
-        subtree: false // 不观察所有后代，提高性能
+        subtree: false
     });
 }
 
-// 启动观察器
-if (document.body) {
-    startObserver();
-} else {
-    document.addEventListener('DOMContentLoaded', startObserver);
+function addInteractionListeners() {
+    ['click', 'scroll'].forEach(eventType => {
+        document.addEventListener(eventType, function (event) {
+            console.log(`${eventType} 事件触发`);
+            // 确保规则已经加载且DOM已准备好
+            if (currentRules && currentRules.length > 0 && document.body) {
+                console.log('事件触发，规则已加载且DOM已准备好，开始检查按钮');
+                checkAndInsertButtons();
+            } else {
+                console.log('事件触发，但条件不满足：', {
+                    rulesLoaded: !!(currentRules && currentRules.length > 0),
+                    domReady: !!document.body
+                });
+            }
+        }, true);
+    });
 }
 
-// 性能优化：页面卸载时清理
+// 页面卸载时清理
 window.addEventListener('unload', () => {
     if (observer) {
         observer.disconnect();
-    }
-    if (checkInterval) {
-        clearInterval(checkInterval);
     }
 });

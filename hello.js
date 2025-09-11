@@ -4,17 +4,7 @@ class RuleManager {
         this.storageKey = 'downloadRules';
         this.currentEditingId = null;
         this.animationDelay = 100;
-        this.defaultRules = [
-            {
-                id: 1,
-                buttonName: "希音按钮",
-                buttonPosition: ".size-item__title",
-                elementPosition: ".thumbs-picture",
-                regexPattern: "_thumbnail_\\d+x\\d+",
-                webKeyword: "shein",
-                saveFormat: "jpg"
-            }
-        ];
+
 
         this.init();
     }
@@ -220,13 +210,7 @@ class RuleManager {
         try {
             let rules = await this.getRules();
 
-            // 如果没有规则，初始化默认规则
-            if (rules.length === 0) {
-                console.log('No existing rules found, initializing default rules');
-                rules = this.defaultRules;
-                await this.setRules(rules);
-            }
-
+            // 不再自动初始化默认规则，直接渲染现有规则
             this.renderRulesTable(rules);
             console.log('Rules loaded successfully, total:', rules.length);
         } catch (error) {
@@ -234,22 +218,7 @@ class RuleManager {
             this.showError('加载规则失败');
         }
     }
-    // 添加一个初始化检查方法，可以在插件安装时调用
-    async initializeDefaultRules() {
-        try {
-            const rules = await this.getRules();
-            if (rules.length === 0) {
-                console.log('Initializing default rules on first install');
-                await this.setRules(this.defaultRules);
-                this.renderRulesTable(this.defaultRules);
-                return true;
-            }
-            return false;
-        } catch (error) {
-            console.error('Error initializing default rules:', error);
-            return false;
-        }
-    }
+
     // 渲染规则表格
     renderRulesTable(rules) {
         const tbody = document.querySelector('.hand-drawn-table tbody');
